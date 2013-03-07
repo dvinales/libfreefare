@@ -53,9 +53,27 @@ AC_DEFINE([_BSD_SOURCE], [1], [Define on BSD to activate all library features])
 
 CFLAGS="$CFLAGS -std=c99"
 
-# Crypto functions for MIFARE DesFire support are provided by OpenSSL.
-AC_CHECK_LIB([crypto], [DES_ecb_encrypt], [], [AC_MSG_ERROR([Cannot find libcrypto.])])
-AC_CHECK_HEADERS([openssl/aes.h openssl/des.h openssl/rand.h], [], [AC_MSG_ERROR([Cannot find openssl headers.])])
+AC_ARG_WITH([crypto],
+    [AS_HELP_STRING([--with-crypto], [Choose crypto library to use. Options are openssl and polarssl. @<:@default=openssl@:>@])],
+    [AS_IF([test "x$with_crypto" = xpolarssl], [crypto_polarssl=yes;crypto_openssl=no], [crypto_openssl=yes;crypto_polarssl=no])],
+    [crypto_openssl=yes; crypto_polarssl=no]
+    )
+
+#echo polar=$crypto_polarssl
+#echo open =$crypto_openssl
+
+if test "x$crypto_openssl" = "xyes"; then
+    # Crypto functions for MIFARE DesFire support are provided by OpenSSL.
+    AC_CHECK_LIB([crypto], [DES_ecb_encrypt], [], [AC_MSG_ERROR([Cannot find libcrypto.])])
+    AC_CHECK_HEADERS([openssl/aes.h openssl/des.h openssl/rand.h], [], [AC_MSG_ERROR([Cannot find openssl headers.])])
+    AC_DEFINE([LIBFREEFARE_USE_OPENSSL], [1], [Define if using OpenSSL for crypto.])
+fi
+if test "x$crypto_polarssl" = "xyes"; then
+    # Crypto functions for MIFARE DesFire support are provided by OpenSSL.
+    AC_CHECK_LIB([polarssl], [des_crypt_ecb], [], [AC_MSG_ERROR([Cannot find libpolarssl.])])
+    AC_CHECK_HEADERS([polarssl/aes.h polarssl/des.h polarssl/havege.h], [], [AC_MSG_ERROR([Cannot find polarssl headers.])])
+    AC_DEFINE([LIBFREEFARE_USE_POLARSSL], [1], [Define if using PolarSSL for crypto.])
+fi
 
 # Checks for pkg-config modules.
 LIBNFC_REQUIRED_VERSION="1.7.0"
