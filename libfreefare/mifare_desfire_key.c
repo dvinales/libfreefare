@@ -17,6 +17,10 @@
  * $Id$
  */
 
+#ifdef HAVE_CONFIG_H
+  #include "config.h"
+#endif
+
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
@@ -52,6 +56,15 @@ update_decrypt_key_schedules (MifareDESFireKey key)
   }
 }
 
+static void update_key_schedules(MifareDESFireKey key)
+{
+    update_encrypt_key_schedules(key);
+#ifdef LIBFREEFARE_USE_POLARSSL
+    // no need to do that for OpenSSL - it would be doing the same thing over again.
+    update_decrypt_key_schedules(key);
+#endif
+}
+
 MifareDESFireKey
 mifare_desfire_des_key_new (uint8_t value[8])
 {
@@ -71,7 +84,7 @@ mifare_desfire_des_key_new_with_version (uint8_t value[8])
 	key->type = T_DES;
 	memcpy (key->data, value, 8);
 	memcpy (key->data+8, value, 8);
-	//update_key_schedules (key);
+	update_key_schedules (key);
     }
     return key;
 }
@@ -96,7 +109,7 @@ mifare_desfire_3des_key_new_with_version (uint8_t value[16])
     if ((key = malloc (sizeof (struct mifare_desfire_key)))) {
 	key->type = T_3DES;
 	memcpy (key->data, value, 16);
-	//update_key_schedules (key);
+	update_key_schedules (key);
     }
     return key;
 }
@@ -119,7 +132,7 @@ mifare_desfire_3k3des_key_new_with_version (uint8_t value[24])
     if ((key = malloc (sizeof (struct mifare_desfire_key)))) {
 	key->type = T_3K3DES;
 	memcpy (key->data, value, 24);
-	//update_key_schedules (key);
+	update_key_schedules (key);
     }
     return key;
 }
