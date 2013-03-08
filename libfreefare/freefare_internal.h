@@ -22,7 +22,7 @@
 
 #include "config.h"
 
-#include <openssl/des.h>
+#include "crypto_aes_des.h"
 
 /*
  * Endienness macros
@@ -211,17 +211,17 @@ struct mifare_desfire_aid {
     uint8_t data[3];
 };
 
-struct mifare_desfire_key {
-    uint8_t data[24];
-    enum {
+enum mifare_crypto_algorithm {
 	T_DES,
 	T_3DES,
 	T_3K3DES,
 	T_AES
-    } type;
-    DES_key_schedule ks1;
-    DES_key_schedule ks2;
-    DES_key_schedule ks3;
+};
+
+struct mifare_desfire_key {
+    uint8_t data[24];
+    enum mifare_crypto_algorithm type;
+    crypto_key_schedule ks;
     uint8_t cmac_sk1[24];
     uint8_t cmac_sk2[24];
     uint8_t aes_version;

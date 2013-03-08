@@ -17,24 +17,39 @@
  * $Id$
  */
 
+#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include <openssl/des.h>
+#include "crypto_aes_des.h"
 
 #include <freefare.h>
 #include "freefare_internal.h"
 
-static inline void update_key_schedules (MifareDESFireKey key);
-
-static inline void
-update_key_schedules (MifareDESFireKey key)
+void
+update_encrypt_key_schedules (MifareDESFireKey key)
 {
-    DES_set_key ((DES_cblock *)key->data, &(key->ks1));
-    DES_set_key ((DES_cblock *)(key->data + 8), &(key->ks2));
-    if (T_3K3DES == key->type) {
-	DES_set_key ((DES_cblock *)(key->data + 16), &(key->ks3));
-    }
+  switch (key->type)
+  {
+  default: assert(false); break;
+  case T_AES:    crypto_aes_set_encrypt_key(key->data, 128, &key->ks);    break;
+  case T_DES:    crypto_des_set_encrypt_key(key->data, &key->ks);    break;
+  case T_3DES:   crypto_des3_set_encrypt_key(key->data, &key->ks);   break;
+  case T_3K3DES: crypto_des3k3_set_encrypt_key(key->data, &key->ks); break;
+  }
+}
+
+void
+update_decrypt_key_schedules (MifareDESFireKey key)
+{
+  switch (key->type)
+  {
+  default: assert(false); break;
+  case T_AES:    crypto_aes_set_decrypt_key(key->data, 128, &key->ks);    break;
+  case T_DES:    crypto_des_set_decrypt_key(key->data, &key->ks);    break;
+  case T_3DES:   crypto_des3_set_decrypt_key(key->data, &key->ks);   break;
+  case T_3K3DES: crypto_des3k3_set_decrypt_key(key->data, &key->ks); break;
+  }
 }
 
 MifareDESFireKey
@@ -56,7 +71,7 @@ mifare_desfire_des_key_new_with_version (uint8_t value[8])
 	key->type = T_DES;
 	memcpy (key->data, value, 8);
 	memcpy (key->data+8, value, 8);
-	update_key_schedules (key);
+	//update_key_schedules (key);
     }
     return key;
 }
@@ -81,7 +96,7 @@ mifare_desfire_3des_key_new_with_version (uint8_t value[16])
     if ((key = malloc (sizeof (struct mifare_desfire_key)))) {
 	key->type = T_3DES;
 	memcpy (key->data, value, 16);
-	update_key_schedules (key);
+	//update_key_schedules (key);
     }
     return key;
 }
@@ -104,7 +119,7 @@ mifare_desfire_3k3des_key_new_with_version (uint8_t value[24])
     if ((key = malloc (sizeof (struct mifare_desfire_key)))) {
 	key->type = T_3K3DES;
 	memcpy (key->data, value, 24);
-	update_key_schedules (key);
+	//update_key_schedules (key);
     }
     return key;
 }

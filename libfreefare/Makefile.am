@@ -16,6 +16,17 @@ libfreefare_la_SOURCES = freefare.c \
 			 mad.c \
 			 mifare_application.c \
 			 tlv.c
+
+if LIBFREEFARE_USE_OPENSSL
+libfreefare_la_SOURCES += crypto_aes_des_openssl.c \
+             crypto_random_openssl.c
+endif
+
+if LIBFREEFARE_USE_POLARSSL
+libfreefare_la_SOURCES += crypto_aes_des_polarssl.c \
+             crypto_random_polarssl.c
+endif
+
 libfreefare_la_LIBADD =
 
 if WITH_DEBUG

@@ -266,7 +266,7 @@ mifare_ultralightc_authenticate (MifareTag tag, const MifareDESFireKey key)
     mifare_cypher_single_block (key, PICC_RndB, ivect, MCD_RECEIVE, MCO_DECYPHER, 8);
 
     uint8_t PCD_RndA[8];
-    DES_random_key ((DES_cblock*)&PCD_RndA);
+    crypto_des_random_key(PCD_RndA);
 
     uint8_t PCD_r_RndB[8];
     memcpy (PCD_r_RndB, PICC_RndB, 8);

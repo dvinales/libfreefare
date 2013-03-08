@@ -53,12 +53,13 @@
 #  include <sys/types.h>
 #endif
 
-#include <openssl/aes.h>
-#include <openssl/des.h>
+#include "crypto_aes_des.h"
 
 #include <err.h>
+#include <stdlib.h>
 #include <string.h>
 #include <strings.h>
+#include <malloc.h>
 
 #ifdef WITH_DEBUG
 #  include <libutil.h>
@@ -651,7 +652,6 @@ mifare_cryto_postprocess_data (MifareTag tag, void *data, ssize_t *nbytes, int c
 void
 mifare_cypher_single_block (MifareDESFireKey key, uint8_t *data, uint8_t *ivect, MifareCryptoDirection direction, MifareCryptoOperation operation, size_t block_size)
 {
-    AES_KEY k;
     uint8_t ovect[MAX_CRYPTO_BLOCK_SIZE];
 
     if (direction == MCD_SEND) {
@@ -666,50 +666,42 @@ mifare_cypher_single_block (MifareDESFireKey key, uint8_t *data, uint8_t *ivect,
     case T_DES:
 	switch (operation) {
 	case MCO_ENCYPHER:
-	    DES_ecb_encrypt ((DES_cblock *) data, (DES_cblock *) edata, &(key->ks1), DES_ENCRYPT);
+	    crypto_des_ecb_encrypt(data, edata, &(key->ks));
 	    break;
 	case MCO_DECYPHER:
-	    DES_ecb_encrypt ((DES_cblock *) data, (DES_cblock *) edata, &(key->ks1), DES_DECRYPT);
+	    crypto_des_ecb_decrypt(data, edata, &(key->ks));
 	    break;
 	}
 	break;
     case T_3DES:
 	switch (operation) {
 	case MCO_ENCYPHER:
-	    DES_ecb_encrypt ((DES_cblock *) data,  (DES_cblock *) edata, &(key->ks1), DES_ENCRYPT);
-	    DES_ecb_encrypt ((DES_cblock *) edata, (DES_cblock *) data,  &(key->ks2), DES_DECRYPT);
-	    DES_ecb_encrypt ((DES_cblock *) data,  (DES_cblock *) edata, &(key->ks1), DES_ENCRYPT);
+        crypto_des3_ecb_encrypt(data, edata, &key->ks);
 	    break;
 	case MCO_DECYPHER:
-	    DES_ecb_encrypt ((DES_cblock *) data,  (DES_cblock *) edata, &(key->ks1), DES_DECRYPT);
-	    DES_ecb_encrypt ((DES_cblock *) edata, (DES_cblock *) data,  &(key->ks2), DES_ENCRYPT);
-	    DES_ecb_encrypt ((DES_cblock *) data,  (DES_cblock *) edata, &(key->ks1), DES_DECRYPT);
+        crypto_des3_ecb_decrypt(data, edata, &key->ks);
 	    break;
 	}
 	break;
     case T_3K3DES:
 	switch (operation) {
 	case MCO_ENCYPHER:
-	    DES_ecb_encrypt ((DES_cblock *) data,  (DES_cblock *) edata, &(key->ks1), DES_ENCRYPT);
-	    DES_ecb_encrypt ((DES_cblock *) edata, (DES_cblock *) data,  &(key->ks2), DES_DECRYPT);
-	    DES_ecb_encrypt ((DES_cblock *) data,  (DES_cblock *) edata, &(key->ks3), DES_ENCRYPT);
+        crypto_des3k3_ecb_encrypt(data, edata, &key->ks);
 	    break;
 	case MCO_DECYPHER:
-	    DES_ecb_encrypt ((DES_cblock *) data,  (DES_cblock *) edata, &(key->ks3), DES_DECRYPT);
-	    DES_ecb_encrypt ((DES_cblock *) edata, (DES_cblock *) data,  &(key->ks2), DES_ENCRYPT);
-	    DES_ecb_encrypt ((DES_cblock *) data,  (DES_cblock *) edata, &(key->ks1), DES_DECRYPT);
+        crypto_des3k3_ecb_decrypt(data, edata, &key->ks);
 	    break;
 	}
 	break;
     case T_AES:
 	switch (operation) {
 	case MCO_ENCYPHER:
-	    AES_set_encrypt_key (key->data, 8*16, &k);
-	    AES_encrypt (data, edata, &k);
+	    crypto_aes_set_encrypt_key(key->data, 8*16, &key->ks);
+	    crypto_aes_encrypt(data, edata, &key->ks);
 	    break;
 	case MCO_DECYPHER:
-	    AES_set_decrypt_key (key->data, 8*16, &k);
-	    AES_decrypt (data, edata, &k);
+	    crypto_aes_set_decrypt_key(key->data, 8*16, &key->ks);
+	    crypto_aes_decrypt(data, edata, &key->ks);
 	    break;
 	}
 	break;

@@ -68,12 +68,15 @@ if test "x$crypto_openssl" = "xyes"; then
     AC_CHECK_HEADERS([openssl/aes.h openssl/des.h openssl/rand.h], [], [AC_MSG_ERROR([Cannot find openssl headers.])])
     AC_DEFINE([LIBFREEFARE_USE_OPENSSL], [1], [Define if using OpenSSL for crypto.])
 fi
+AM_CONDITIONAL(LIBFREEFARE_USE_OPENSSL, [test "x$crypto_openssl" = "xyes"])
+
 if test "x$crypto_polarssl" = "xyes"; then
     # Crypto functions for MIFARE DesFire support are provided by OpenSSL.
     AC_CHECK_LIB([polarssl], [des_crypt_ecb], [], [AC_MSG_ERROR([Cannot find libpolarssl.])])
     AC_CHECK_HEADERS([polarssl/aes.h polarssl/des.h polarssl/havege.h], [], [AC_MSG_ERROR([Cannot find polarssl headers.])])
     AC_DEFINE([LIBFREEFARE_USE_POLARSSL], [1], [Define if using PolarSSL for crypto.])
 fi
+AM_CONDITIONAL(LIBFREEFARE_USE_POLARSSL, [test "x$crypto_polarssl" = "xyes"])
 
 # Checks for pkg-config modules.
 LIBNFC_REQUIRED_VERSION="1.7.0"
