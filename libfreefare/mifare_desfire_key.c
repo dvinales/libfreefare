@@ -30,8 +30,8 @@
 #include <freefare.h>
 #include "freefare_internal.h"
 
-void
-update_encrypt_key_schedules (MifareDESFireKey key)
+static void
+update_key_schedules (MifareDESFireKey key)
 {
   switch (key->type)
   {
@@ -41,11 +41,9 @@ update_encrypt_key_schedules (MifareDESFireKey key)
   case T_3DES:   crypto_des3_set_encrypt_key(key->data, &key->ks);   break;
   case T_3K3DES: crypto_des3k3_set_encrypt_key(key->data, &key->ks); break;
   }
-}
 
-void
-update_decrypt_key_schedules (MifareDESFireKey key)
-{
+#if defined(LIBFREEFARE_USE_POLARSSL)
+  // There's no difference in case of OpenSSL.
   switch (key->type)
   {
   default: assert(false); break;
@@ -54,15 +52,7 @@ update_decrypt_key_schedules (MifareDESFireKey key)
   case T_3DES:   crypto_des3_set_decrypt_key(key->data, &key->ks);   break;
   case T_3K3DES: crypto_des3k3_set_decrypt_key(key->data, &key->ks); break;
   }
-}
-
-static void update_key_schedules(MifareDESFireKey key)
-{
-    update_encrypt_key_schedules(key);
-#ifdef LIBFREEFARE_USE_POLARSSL
-    // no need to do that for OpenSSL - it would be doing the same thing over again.
-    update_decrypt_key_schedules(key);
-#endif
+#endif // LIBFREEFARE_USE_POLARSSL
 }
 
 MifareDESFireKey

@@ -52,9 +52,6 @@ typedef struct mifare_desfire_key *MifareDESFireKey;
 typedef uint8_t MifareUltralightPageNumber;
 typedef unsigned char MifareUltralightPage[4];
 
-void update_encrypt_key_schedules (MifareDESFireKey key);
-void update_decrypt_key_schedules (MifareDESFireKey key);
-
 MifareTag	*freefare_get_tags (nfc_device *device);
 MifareTag	 freefare_tag_new (nfc_device *device, nfc_iso14443a_info nai);
 enum mifare_tag_type freefare_get_tag_type (MifareTag tag);

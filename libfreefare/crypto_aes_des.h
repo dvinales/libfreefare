@@ -26,11 +26,19 @@
   #include <polarssl/aes.h>
   #include <polarssl/des.h>
 
-  typedef union crypto_key_schedule {
-    des_context  des;
-    des3_context des3;
-    des3_context des3k3;
-    aes_context  aes;
+  typedef struct crypto_key_schedule {
+    union {
+        des_context  des;
+        des3_context des3;
+        des3_context des3k3;
+        aes_context  aes;
+    } enc;
+    union {
+        des_context  des;
+        des3_context des3;
+        des3_context des3k3;
+        aes_context  aes;
+    } dec;
   } crypto_key_schedule;
 
 #endif
